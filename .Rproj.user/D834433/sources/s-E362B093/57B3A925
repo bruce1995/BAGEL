@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1593303330033.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "104|32|234|0|\n",
+    "hash" : "4230531921",
+    "id" : "57B3A925",
+    "lastKnownWriteTime" : 1593376716,
+    "last_content_update" : 1593376716016,
+    "path" : "~/Documents/BAGEL/R/BAGEL.R",
+    "project_path" : "R/BAGEL.R",
+    "properties" : {
+        "cursorPosition" : "92,66",
+        "docOutlineVisible" : "0",
+        "scrollLine" : "80"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

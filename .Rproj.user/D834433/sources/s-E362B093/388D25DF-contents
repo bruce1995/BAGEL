@@ -1,0 +1,38 @@
+library(BAGEL)
+library(mvtnorm)
+data("simulated_data")
+set.seed(1)
+U    <- simulated_data$U
+data <- simulated_data$data
+
+Z    <- simulated_data$Z
+D    <- 5    #five drugs
+Q    <- 3    #three depression scores
+S    <- 5    #5 covariates
+B    <- 10   #10 basis
+N    <- 200  #200 patients
+X <- data[,1:(S+2)]
+
+Comega_init <- diag(Q)
+rho_init    <- 0.1
+H_init      <- 2
+a_init      <- c(-100, 0, 9, 18, 100)
+e_init      <- sample.int(H_init, size = N, replace = T)
+alpha_init  <- array(rnorm(S*Q*D*H_init,sd=1), dim=c(S,D*Q, H_init))
+gamma_init  <- array(rnorm(B*Q*D*H_init,sd=1), dim=c(B,Q*D, H_init))
+beta_init   <- array(rnorm(Q*(1+S)*H_init,sd=1), dim=c(Q,1+S, H_init))
+R_init      <- array(rbinom(D*Q*H_init, size = 1, prob = rho_init), dim=c(Q,D, H_init))
+
+sigma_square <- sigma_square_alpha_init <- sigma_square_beta_init <- sigma_square_gamma_init <- 1
+
+
+mcmc <- main_mcmc(U, Z, X, D, Q, S, N,
+                  Comega_init, rho_init, H_init, a_init, e_init,
+                  alpha_init, gamma_init, beta_init, R_init,
+                  10, 2,1, B)
+
+x_new <- X[10,]
+z_new <- Z[10,]
+visit_time <- X[,2]
+visit_time_new <- X[10,2]
+depression_prob_predict(mcmc, z_new, x_new, D, Q, S, visit_time, B)

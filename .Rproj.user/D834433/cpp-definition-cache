@@ -1,0 +1,365 @@
+[
+    {
+        "definitions" : [
+            {
+                "column" : 8,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 3,
+                "name" : "fastncdf_pos(double)",
+                "parent_name" : "",
+                "usr" : "c:@F@fastncdf_pos#d#"
+            },
+            {
+                "column" : 8,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 10,
+                "name" : "fastncdf(double)",
+                "parent_name" : "",
+                "usr" : "c:@F@fastncdf#d#"
+            },
+            {
+                "column" : 11,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 17,
+                "name" : "rowsome(arma::mat, arma::rowvec)",
+                "parent_name" : "",
+                "usr" : "c:@F@rowsome#$@N@arma@S@Mat>#d#$@N@arma@S@Row>#d#"
+            },
+            {
+                "column" : 11,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 27,
+                "name" : "colsome(arma::mat, arma::rowvec)",
+                "parent_name" : "",
+                "usr" : "c:@F@colsome#$@N@arma@S@Mat>#d#$@N@arma@S@Row>#d#"
+            },
+            {
+                "column" : 5,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 37,
+                "name" : "rmunoim(arma::rowvec)",
+                "parent_name" : "",
+                "usr" : "c:@F@rmunoim#$@N@arma@S@Row>#d#"
+            },
+            {
+                "column" : 5,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 51,
+                "name" : "sampleint(int)",
+                "parent_name" : "",
+                "usr" : "c:@F@sampleint#I#"
+            },
+            {
+                "column" : 14,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 59,
+                "name" : "getind(arma::rowvec, double)",
+                "parent_name" : "",
+                "usr" : "c:@F@getind#$@N@arma@S@Row>#d#d#"
+            },
+            {
+                "column" : 14,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 72,
+                "name" : "whichin(arma::rowvec, arma::rowvec)",
+                "parent_name" : "",
+                "usr" : "c:@F@whichin#$@N@arma@S@Row>#d#S0_#"
+            },
+            {
+                "column" : 14,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 91,
+                "name" : "n_to_m(int, int)",
+                "parent_name" : "",
+                "usr" : "c:@F@n_to_m#I#I#"
+            },
+            {
+                "column" : 14,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 99,
+                "name" : "repp(double, int)",
+                "parent_name" : "",
+                "usr" : "c:@F@repp#d#I#"
+            },
+            {
+                "column" : 11,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 104,
+                "name" : "mymatrix2(arma::vec, int, int, bool)",
+                "parent_name" : "",
+                "usr" : "c:@F@mymatrix2#$@N@arma@S@Col>#d#I#I#b#"
+            },
+            {
+                "column" : 11,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 117,
+                "name" : "put_rows(arma::mat &, arma::rowvec, arma::mat)",
+                "parent_name" : "",
+                "usr" : "c:@F@put_rows#&$@N@arma@S@Mat>#d#$@N@arma@S@Row>#d#S1_#"
+            },
+            {
+                "column" : 11,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 126,
+                "name" : "compute_mu(int, arma::rowvec, arma::cube, arma::cube, arma::cube, arma::cube, arma::mat, arma::mat, int, int, int, int)",
+                "parent_name" : "",
+                "usr" : "c:@F@compute_mu#I#$@N@arma@S@Row>#d#$@N@arma@S@Cube>#d#S1_#S1_#S1_#$@N@arma@S@Mat>#d#S2_#I#I#I#I#"
+            },
+            {
+                "column" : 11,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 197,
+                "name" : "compute_muk2(arma::mat &, arma::mat, arma::mat &, arma::mat &, arma::mat &, arma::mat &, int, int, int, int)",
+                "parent_name" : "",
+                "usr" : "c:@F@compute_muk2#&$@N@arma@S@Mat>#d#S1_#S0_#S0_#S0_#S0_#I#I#I#I#"
+            },
+            {
+                "column" : 14,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 243,
+                "name" : "compute_muk_j2(arma::mat, arma::mat, arma::mat &, arma::mat &, arma::mat &, arma::mat &, int, int, int, int, int)",
+                "parent_name" : "",
+                "usr" : "c:@F@compute_muk_j2#$@N@arma@S@Mat>#d#S0_#&S0_#S1_#S1_#S1_#I#I#I#I#I#"
+            },
+            {
+                "column" : 14,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 285,
+                "name" : "rmvnorm_col(arma::colvec, arma::mat)",
+                "parent_name" : "",
+                "usr" : "c:@F@rmvnorm_col#$@N@arma@S@Col>#d#$@N@arma@S@Mat>#d#"
+            },
+            {
+                "column" : 14,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 302,
+                "name" : "whichno(arma::colvec, double)",
+                "parent_name" : "",
+                "usr" : "c:@F@whichno#$@N@arma@S@Col>#d#d#"
+            },
+            {
+                "column" : 11,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 316,
+                "name" : "eye(int)",
+                "parent_name" : "",
+                "usr" : "c:@F@eye#I#"
+            },
+            {
+                "column" : 11,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 322,
+                "name" : "put_col_somerows(arma::mat, arma::rowvec, int, arma::colvec)",
+                "parent_name" : "",
+                "usr" : "c:@F@put_col_somerows#$@N@arma@S@Mat>#d#$@N@arma@S@Row>#d#I#$@N@arma@S@Col>#d#"
+            },
+            {
+                "column" : 6,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 331,
+                "name" : "update_alpha(int, arma::rowvec &, arma::cube, arma::cube &, arma::cube &, arma::cube &, arma::mat &, arma::mat &, int, int, int, int, arma::mat, arma::mat, double, double)",
+                "parent_name" : "",
+                "usr" : "c:@F@update_alpha#I#&$@N@arma@S@Row>#d#$@N@arma@S@Cube>#d#&S2_#S3_#S3_#&$@N@arma@S@Mat>#d#S4_#I#I#I#I#S5_#S5_#d#d#"
+            },
+            {
+                "column" : 11,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 446,
+                "name" : "makeP(int, int)",
+                "parent_name" : "",
+                "usr" : "c:@F@makeP#I#I#"
+            },
+            {
+                "column" : 6,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 458,
+                "name" : "update_gamma(int, arma::rowvec &, arma::cube &, arma::cube, arma::cube &, arma::cube &, arma::mat &, arma::mat &, int, int, int, int, arma::mat, arma::mat, double, double)",
+                "parent_name" : "",
+                "usr" : "c:@F@update_gamma#I#&$@N@arma@S@Row>#d#&$@N@arma@S@Cube>#d#S3_#S2_#S2_#&$@N@arma@S@Mat>#d#S4_#I#I#I#I#S5_#S5_#d#d#"
+            },
+            {
+                "column" : 12,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 575,
+                "name" : "update_beta(int, arma::rowvec &, arma::cube &, arma::cube &, arma::cube &, arma::cube, arma::mat &, arma::mat &, int, int, int, int, arma::mat, double, double)",
+                "parent_name" : "",
+                "usr" : "c:@F@update_beta#I#&$@N@arma@S@Row>#d#&$@N@arma@S@Cube>#d#S2_#S2_#S3_#&$@N@arma@S@Mat>#d#S4_#I#I#I#I#S5_#d#d#"
+            },
+            {
+                "column" : 8,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 669,
+                "name" : "dmvnrm_arma(arma::rowvec, arma::rowvec, double, bool)",
+                "parent_name" : "",
+                "usr" : "c:@F@dmvnrm_arma#$@N@arma@S@Row>#d#S0_#d#b#"
+            },
+            {
+                "column" : 8,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 682,
+                "name" : "dmvnrm_arma_matrix(arma::mat, arma::mat, double, bool)",
+                "parent_name" : "",
+                "usr" : "c:@F@dmvnrm_arma_matrix#$@N@arma@S@Mat>#d#S0_#d#b#"
+            },
+            {
+                "column" : 8,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 696,
+                "name" : "compute_likelihood(arma::rowvec, arma::mat, arma::mat, double)",
+                "parent_name" : "",
+                "usr" : "c:@F@compute_likelihood#$@N@arma@S@Row>#d#$@N@arma@S@Mat>#d#S1_#d#"
+            },
+            {
+                "column" : 11,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 720,
+                "name" : "compute_betaZ(arma::mat &, arma::mat &, int, int)",
+                "parent_name" : "",
+                "usr" : "c:@F@compute_betaZ#&$@N@arma@S@Mat>#d#S0_#I#I#"
+            },
+            {
+                "column" : 14,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 736,
+                "name" : "compute_BX_j2(arma::mat &, arma::mat &, arma::mat &, arma::mat &, arma::mat &, arma::mat &, int, int, int, int, int)",
+                "parent_name" : "",
+                "usr" : "c:@F@compute_BX_j2#&$@N@arma@S@Mat>#d#S0_#S0_#S0_#S0_#S0_#I#I#I#I#I#"
+            },
+            {
+                "column" : 12,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 772,
+                "name" : "update_R(int, arma::rowvec &, arma::cube &, arma::cube &, arma::cube, arma::cube &, arma::mat &, arma::mat &, int, int, int, int, arma::rowvec &, arma::mat &, arma::mat, arma::mat, double, double)",
+                "parent_name" : "",
+                "usr" : "c:@F@update_R#I#&$@N@arma@S@Row>#d#&$@N@arma@S@Cube>#d#S2_#S3_#S2_#&$@N@arma@S@Mat>#d#S4_#I#I#I#I#S0_#S4_#S5_#S5_#d#d#"
+            },
+            {
+                "column" : 6,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 876,
+                "name" : "update_e(int, arma::rowvec, arma::cube, arma::cube, arma::cube, arma::cube, arma::mat &, arma::mat &, int, int, int, int, arma::rowvec &, arma::mat &, arma::mat, arma::mat, int, double, double, double, int)",
+                "parent_name" : "",
+                "usr" : "c:@F@update_e#I#$@N@arma@S@Row>#d#$@N@arma@S@Cube>#d#S1_#S1_#S1_#&$@N@arma@S@Mat>#d#S2_#I#I#I#I#&S0_#S2_#S3_#S3_#I#d#d#d#I#"
+            },
+            {
+                "column" : 8,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 1040,
+                "name" : "update_sig_square(arma::mat &, double, double)",
+                "parent_name" : "",
+                "usr" : "c:@F@update_sig_square#&$@N@arma@S@Mat>#d#d#d#"
+            },
+            {
+                "column" : 8,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 1047,
+                "name" : "update_sig_square_cub(arma::cube &, double, double)",
+                "parent_name" : "",
+                "usr" : "c:@F@update_sig_square_cub#&$@N@arma@S@Cube>#d#d#d#"
+            },
+            {
+                "column" : 11,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 1054,
+                "name" : "update_omega(arma::mat &, arma::mat &, arma::mat &, double, int)",
+                "parent_name" : "",
+                "usr" : "c:@F@update_omega#&$@N@arma@S@Mat>#d#S0_#S0_#d#I#"
+            },
+            {
+                "column" : 8,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 1070,
+                "name" : "update_gamma_sigma_square(arma::cube &, int, double, double)",
+                "parent_name" : "",
+                "usr" : "c:@F@update_gamma_sigma_square#&$@N@arma@S@Cube>#d#I#d#d#"
+            },
+            {
+                "column" : 11,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 1091,
+                "name" : "update_Y(arma::mat &, arma::rowvec &, arma::mat, int, double)",
+                "parent_name" : "",
+                "usr" : "c:@F@update_Y#&$@N@arma@S@Mat>#d#&$@N@arma@S@Row>#d#S1_#I#d#"
+            },
+            {
+                "column" : 14,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 1109,
+                "name" : "update_a(arma::mat &, arma::mat, arma::rowvec, double, double)",
+                "parent_name" : "",
+                "usr" : "c:@F@update_a#&$@N@arma@S@Mat>#d#S1_#$@N@arma@S@Row>#d#d#d#"
+            },
+            {
+                "column" : 11,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 1150,
+                "name" : "Mahalanobis(arma::mat, arma::rowvec, arma::mat)",
+                "parent_name" : "",
+                "usr" : "c:@F@Mahalanobis#$@N@arma@S@Mat>#d#$@N@arma@S@Row>#d#S0_#"
+            },
+            {
+                "column" : 11,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 1160,
+                "name" : "dmvnorm_arma(arma::mat, arma::rowvec, arma::mat, bool)",
+                "parent_name" : "",
+                "usr" : "c:@F@dmvnorm_arma#$@N@arma@S@Mat>#d#$@N@arma@S@Row>#d#S0_#b#"
+            },
+            {
+                "column" : 11,
+                "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+                "kind" : 6,
+                "line" : 1172,
+                "name" : "update_Comega(arma::mat &, arma::mat, int, double, double, double, double)",
+                "parent_name" : "",
+                "usr" : "c:@F@update_Comega#&$@N@arma@S@Mat>#d#S1_#I#d#d#d#d#"
+            }
+        ],
+        "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.cpp",
+        "file_last_write" : 1593313365.000000
+    },
+    {
+        "definitions" : [
+        ],
+        "file" : "/Users/yuliangli/Documents/BAGEL/src/BAGEL.h",
+        "file_last_write" : 1593372278.000000
+    }
+]

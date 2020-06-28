@@ -1,0 +1,67 @@
+library(BAGEL)
+library(mvtnorm)
+data("simulated_data")
+U    <- simulated_data$U
+data <- simulated_data$data
+Z    <- simulated_data$Z
+set.seed(1)
+D <- 5    #five drugs
+Q <- 3    #three depression scores
+N <- 200  #200 patients
+S <- 5    #5 covariates
+B <- 10   #10 basis
+NN <- dim(U)[1]
+#------initialize--------
+Comega <- diag(Q)
+rho <- 0.1
+H  <- 2
+sigma_square <- sigma_square_alpha <- sigma_square_beta <- sigma_square_gamma <- 1
+a <- c(-100, 0, 9, 18, 100)
+
+alpha <- array(rnorm(S*Q*D*H,sd=1), dim=c(S,D*Q, H))
+gamma <- array(rnorm(B*Q*D*H,sd=1), dim=c(B,Q*D, H))
+beta  <- array(rnorm(Q*(1+S)*H,sd=1), dim=c(Q,1+S, H))
+R     <- array(rbinom(D*Q*H, size = 1, prob = rho), dim=c(Q,D, H))
+e     <- sample.int(H, size = N, replace = T)
+omega <- rmvnorm(NN, rep(0,Q), Comega)
+mu    <- compute_mu_cpp(H, e,  alpha, gamma, R, beta, Z, data, D, Q, S, B)
+Y     <- update_Y_cpp(U, a, mu+omega, Q,sigma_square )
+
+for(iter in 1:100){
+  RETURNALPHA <- update_alpha_cpp(H, e, alpha, gamma, R, beta, Z, data, D, Q, S, B,
+                                  mu, Y-omega, sigma_square, sigma_square_alpha)
+  alpha <- RETURNALPHA$alpha
+  mu    <- RETURNALPHA$mu
+  
+  RETURNGAMMA <- update_gamma_cpp(H, e, alpha, gamma, R, beta, Z, data, D, Q, S, B,
+                                  mu, Y-omega, sigma_square, sigma_square_gamma)
+  gamma <- RETURNGAMMA$gamma
+  mu    <- RETURNGAMMA$mu
+  
+  beta <- update_beta_cpp(H, e, alpha, gamma, R, beta, Z,
+                          data, D, Q, S, B, Y-omega, sigma_square, sigma_square_beta)
+  mu   <- compute_mu_cpp(H, e,alpha, gamma, R, beta, Z, data, D, Q, S, B)
+  
+  R  <- update_R_cpp(H, e, alpha, gamma, R, beta, Z, data, D, Q, S, B,
+                     a, U, mu,Y-omega, rho ,sigma_square )
+  mu <- compute_mu_cpp(H, e,  alpha, gamma,  R, beta, Z, data, D, Q, S, B)
+  
+  RETURNE <- update_e_cpp(H, e, alpha, gamma, R, beta,
+                          Z, data, D, Q, S, B,a, U, mu, Y-omega, N, sigma_square, 1, rho, 10)
+  H     <- RETURNE$H
+  e     <- RETURNE$e
+  alpha <- RETURNE$alpha
+  gamma <- RETURNE$gamma
+  R     <- RETURNE$R
+  beta  <- RETURNE$beta
+  mu    <- compute_mu_cpp(H, e, alpha, gamma, R, beta, Z, data, D, Q, S, B)
+  
+  rho                <- update_rho(R)
+  Y                  <- update_Y_cpp(U, a, mu+omega, Q,sigma_square )
+  a                  <- update_a_cpp(U, mu+omega, a, sqrt(sigma_square),0.3) 
+  omega              <- update_omega_cpp(Y, mu, Comega, sigma_square, Q)
+  Comega             <- update_Comega_cpp(omega, Comega, Q, sigma_square, step = 100/NN) 
+  sigma_square_beta  <- update_sig_square_cub_cpp(beta, a=3, b=10)
+  sigma_square_alpha <- update_sig_square_cub_cpp(alpha, a=3, b=10)
+  sigma_square_gamma <- update_gamma_sigma_square_cpp(gamma, B, a=10, b=1)
+}

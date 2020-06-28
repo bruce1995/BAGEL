@@ -1,0 +1,297 @@
+## usethis namespace: start
+#' @importFrom Rcpp sourceCpp
+## usethis namespace: end
+NULL
+
+update_rho <- function(R, alpha=1, beta=10){
+  NR <- prod(dim(R))
+  NX <- sum(R)
+  rbeta(1,alpha+NX, beta+NR-NX)
+}
+
+#' main_mcmc
+#'
+#' This function returns the posted-brun-in MCMC samples thinned by the thinning factor,
+#' provided observed data and initial values for some parameters
+#'
+#' @param U the depression scores, each row corresponds to one visit
+#' @param Z the binary indicator matrix for drug usage information, each row corresponds to one visit
+#' @param X the covariates matrix, it also includes the patient ID (1st column) and visit time (2nd column). Each row corresponds to one visit
+#' @param D the number of drugs
+#' @param Q the number of depression scores
+#' @param S the number of covariates
+#' @param N the number of patients in the dataset
+#' @param Comega_init the intial value of \code{Comega}, which is the correlation matrix which captures the dependencies among depression items
+#' @param rho_init the intial value of \code{rho}, which is the prior probability of the binary indicator cube entries being 1
+#' @param H_init the intial value of \code{H}, which is the number of clusters
+#' @param a_init the intial value of \code{a}, which is the thresholds that connects the latent and observed depression scores
+#' @param e_init the intial value of \code{e}, which is the clustering membership vector
+#' @param alpha_init the intial value of \code{alpha}, which is the linear coefficients dependent on drug effect. It should be a cube, each slice corresponds to one cluster, each slice should be a 'S' by 'DQ' matrix.
+#' @param gamma_init the intial value of \code{gamma}, which is the linear coefficients for the P-spline. It should be a cube, each slice corresponds to one cluster, each slice should be a 'B' by 'DQ' matrix.
+#' @param beta_init the intial value of \code{beta}, which is the linear coefficients not dependent on drug effect. It should be a cube, each slice corresponds to one cluster, each slice should be a 'Q' by '1+S' matrix with the first column being the intercept.
+#' @param R_init the intial value of \code{R}, which is the binary indicator cube. It should be a cube, each slice corresponds to one cluster, each slice should be a 'Q' by 'D' matrix.
+#' @param Burnin number of burn-in iterations in MCMC
+#' @param Niter number of iterations after burn-in in MCMC
+#' @param thin the MCMC thinning factor
+#' @param B the number of bases for P-spline
+#' @param sigma_square_alpha_init the intial value of \code{sigma_square_alpha}, which is the variance of \code{alpha}
+#' @param sigma_square_beta_init the intial value of \code{sigma_square_beta}, which is the variance of \code{beta}
+#' @param sigma_square_gamma_init the intial value of \code{sigma_square_gamma}, which is the variance of \code{gamma}
+#' @param sigma_square the variance of noise for the latent continuous depression scores
+#' @param m0 the concentration parameter for Dirichlet Process
+#' @param H_max the maximum number of clusters allowed
+#' @param a_rho the first hyper-parameter of \code{rho} with default value being 1, where we assume \code{rho}~Beta(alpha, beta)
+#' @param b_rho the second hyper-parameter of \code{rho}
+#' @param step_a the step size for Metropolis–Hastings algorithm updating \code{a}
+#' @param step_Comega the step size for Metropolis–Hastings algorithm updating \code{Comega}
+#' @param a_beta the first hyper-parameter of \code{sigma_square_beta}, where we assume variance of \code{beta} is sampled from inv-Gamma(a,b)
+#' @param b_beta the second hyper-parameter of \code{sigma_square_beta}
+#' @param a_alpha the first hyper-parameter of \code{sigma_square_alpha}, where we assume variance of \code{alpha} is sampled from inv-Gamma(a,b)
+#' @param b_alpha the second hyper-parameter of \code{sigma_square_alpha}
+#' @param a_gamma the first hyper-parameter of \code{sigma_square_gamma}, where we assume variance of \code{gamma} is sampled from inv-Gamma(a,b).
+#' @param b_gamma the second hyper-parameter of \code{sigma_square_gamma}
+#' @param seed the starting number used to generate random numbers
+#' @return the posted-brun-in MCMC samples thinned by the thinning factor
+#' @examples
+#' \dontrun{
+#' library(BAGEL)
+#' library(mvtnorm)
+#' data("simulated_data")
+#' set.seed(1)
+#' U    <- simulated_data$U
+#' data <- simulated_data$data
+#' Z    <- simulated_data$Z
+#' D    <- 5    #five drugs
+#' Q    <- 3    #three depression scores
+#' S    <- 5    #5 covariates
+#' B    <- 10   #10 basis
+#' N    <- 200  #200 patients
+#' X    <- data[,1:(S+2)]
+#'
+#' Burnin <- 100
+#' Niter  <- 200
+#' thin   <- 5
+#'
+#' Comega_init <- diag(Q)
+#' rho_init    <- 0.1
+#' H_init      <- 2
+#' a_init      <- c(-100, 0, 9, 18, 100)
+#' e_init      <- sample.int(H_init, size = N, replace = T)
+#' alpha_init  <- array(rnorm(S*Q*D*H_init,sd=1), dim=c(S,D*Q, H_init))
+#' gamma_init  <- array(rnorm(B*Q*D*H_init,sd=1), dim=c(B,Q*D, H_init))
+#' beta_init   <- array(rnorm(Q*(1+S)*H_init,sd=1), dim=c(Q,1+S, H_init))
+#' R_init      <- array(rbinom(D*Q*H_init, size = 1, prob = rho_init), dim=c(Q,D, H_init))
+#'
+#' sigma_square <- sigma_square_alpha_init <- sigma_square_beta_init <- sigma_square_gamma_init <- 1
+#' mcmc <- main_mcmc(U, Z, X, D, Q, S, N,
+#'                   Comega_init, rho_init, H_init, a_init, e_init,
+#'                   alpha_init, gamma_init, beta_init, R_init,
+#'                   Burnin, Niter, thin, B)
+#' x_new          <- X[10,]
+#' z_new          <- Z[10,]
+#' visit_time     <- X[,2]
+#' depression_prob_predict(mcmc, z_new, x_new, D, Q, S, visit_time, B)
+#' }
+#' @export
+main_mcmc <- function(U, Z, X, D, Q, S, N,
+                      Comega_init, rho_init, H_init, a_init, e_init,
+                      alpha_init, gamma_init, beta_init, R_init,
+                      Burnin, Niter, thin = 1, B = 10,
+                      sigma_square_alpha_init = 1, sigma_square_beta_init = 1,
+                      sigma_square_gamma_init = 1, sigma_square = 1,
+                      m0 = 1, H_max = 10, a_rho = 1, b_rho = 10,
+                      step_a = 0.3, step_Comega = 100, a_beta = 3, b_beta = 10,
+                      a_alpha = 3, b_alpha = 10, a_gamma = 10, b_gamma = 1,
+                      seed = 1){
+  if (B <= 4)
+    stop("Since we use cubic spline, B must be larger than 4")
+
+  require(splines)
+  set.seed(seed)
+  NN <- dim(U)[1]
+
+  tt <- X[,2]/max(X[,2])
+  knots <- c(rep(min(tt),4)-c(0.2,0.15,0.1,0.05),
+             quantile(tt,(1:(B-4))/(B-3)),
+             rep(max(tt), 4) + c(0.05,0.1,0.15,0.2))
+  pbase <- splineDesign(knots, tt, outer.ok = T)
+  data  <- cbind(X, pbase)
+  #------initialize--------
+  mcmc <- NULL
+  mcmc$e      <- matrix(NA, nrow = Niter %/% thin, ncol = N)
+  mcmc$alpha  <- array(NA, dim=c(S,D*Q, H_max, Niter %/% thin))
+  mcmc$gamma  <- array(NA, dim=c(B,Q*D, H_max, Niter %/% thin))
+  mcmc$beta   <- array(NA, dim=c(Q,1+S, H_max, Niter %/% thin))
+  mcmc$R      <- array(NA, dim=c(Q,D, H_max, Niter %/% thin))
+  mcmc$H      <- rep(NA, Niter %/% thin)
+  mcmc$a      <- matrix(NA, nrow = Niter %/% thin, ncol = length(a_init))
+  mcmc$Comega <- array(NA, dim = c(Q,Q,Niter %/% thin))
+
+  sigma_square_alpha <- sigma_square_alpha_init
+  sigma_square_beta <- sigma_square_beta_init
+  sigma_square_gamma <- sigma_square_gamma_init
+
+  H <- H_init
+  a <- a_init
+  rho <- rho_init
+  Comega <- Comega_init
+  alpha <- alpha_init
+  gamma <- gamma_init
+  beta  <- beta_init
+  R     <- R_init
+  e     <- e_init
+  omega <- rmvnorm(NN, rep(0,Q), Comega_init)
+  mu    <- compute_mu(H, e,  alpha, gamma, R, beta, Z, data, D, Q, S, B)
+  Y     <- update_Y(U, a, mu+omega, Q,sigma_square )
+
+  for(iter in 1:Burnin){
+    RETURNALPHA <- update_alpha(H, e, alpha, gamma, R, beta, Z, data, D, Q, S, B,
+                                    mu, Y-omega, sigma_square, sigma_square_alpha)
+    alpha <- RETURNALPHA$alpha
+    mu    <- RETURNALPHA$mu
+
+    RETURNGAMMA <- update_gamma(H, e, alpha, gamma, R, beta, Z, data, D, Q, S, B,
+                                    mu, Y-omega, sigma_square, sigma_square_gamma)
+    gamma <- RETURNGAMMA$gamma
+    mu    <- RETURNGAMMA$mu
+
+    beta <- update_beta(H, e, alpha, gamma, R, beta, Z,
+                            data, D, Q, S, B, Y-omega, sigma_square, sigma_square_beta)
+    mu   <- compute_mu(H, e,alpha, gamma, R, beta, Z, data, D, Q, S, B)
+
+    R  <- update_R(H, e, alpha, gamma, R, beta, Z, data, D, Q, S, B,
+                       a, U, mu,Y-omega, rho ,sigma_square )
+    mu <- compute_mu(H, e,  alpha, gamma,  R, beta, Z, data, D, Q, S, B)
+
+    RETURNE <- update_e(H, e, alpha, gamma, R, beta,
+                            Z, data, D, Q, S, B,a, U, mu, Y-omega, N, sigma_square, m0, rho, H_max)
+    H     <- RETURNE$H
+    e     <- RETURNE$e
+    alpha <- RETURNE$alpha
+    gamma <- RETURNE$gamma
+    R     <- RETURNE$R
+    beta  <- RETURNE$beta
+    mu    <- compute_mu(H, e, alpha, gamma, R, beta, Z, data, D, Q, S, B)
+
+    rho                <- update_rho(R, a_rho, b_rho)
+    Y                  <- update_Y(U, a, mu+omega, Q,sigma_square )
+    a                  <- update_a(U, mu+omega, a, sqrt(sigma_square),step_a)
+    omega              <- update_omega(Y, mu, Comega, sigma_square, Q)
+    Comega             <- update_Comega(omega, Comega, Q, sigma_square, step = step_Comega/NN)
+    sigma_square_beta  <- update_sig_square_cub(beta, a=a_beta, b=b_beta)
+    sigma_square_alpha <- update_sig_square_cub(alpha, a=a_alpha, b=b_alpha)
+    sigma_square_gamma <- update_gamma_sigma_square(gamma, B, a=a_gamma, b=b_gamma)
+  }
+  for(iter in 1:Niter){
+    RETURNALPHA <- update_alpha(H, e, alpha, gamma, R, beta, Z, data, D, Q, S, B,
+                                    mu, Y-omega, sigma_square, sigma_square_alpha)
+    alpha <- RETURNALPHA$alpha
+    mu    <- RETURNALPHA$mu
+
+    RETURNGAMMA <- update_gamma(H, e, alpha, gamma, R, beta, Z, data, D, Q, S, B,
+                                    mu, Y-omega, sigma_square, sigma_square_gamma)
+    gamma <- RETURNGAMMA$gamma
+    mu    <- RETURNGAMMA$mu
+
+    beta <- update_beta(H, e, alpha, gamma, R, beta, Z,
+                            data, D, Q, S, B, Y-omega, sigma_square, sigma_square_beta)
+    mu   <- compute_mu(H, e,alpha, gamma, R, beta, Z, data, D, Q, S, B)
+
+    R  <- update_R(H, e, alpha, gamma, R, beta, Z, data, D, Q, S, B,
+                       a, U, mu,Y-omega, rho ,sigma_square )
+    mu <- compute_mu(H, e,  alpha, gamma,  R, beta, Z, data, D, Q, S, B)
+
+    RETURNE <- update_e(H, e, alpha, gamma, R, beta,
+                            Z, data, D, Q, S, B,a, U, mu, Y-omega, N, sigma_square, m0, rho, H_max)
+    H     <- RETURNE$H
+    e     <- RETURNE$e
+    alpha <- RETURNE$alpha
+    gamma <- RETURNE$gamma
+    R     <- RETURNE$R
+    beta  <- RETURNE$beta
+    mu    <- compute_mu(H, e, alpha, gamma, R, beta, Z, data, D, Q, S, B)
+
+    rho                <- update_rho(R)
+    Y                  <- update_Y(U, a, mu+omega, Q,sigma_square )
+    a                  <- update_a(U, mu+omega, a, sqrt(sigma_square),step_a)
+    omega              <- update_omega(Y, mu, Comega, sigma_square, Q)
+    Comega             <- update_Comega(omega, Comega, Q, sigma_square, step = step_Comega/NN)
+    sigma_square_beta  <- update_sig_square_cub(beta, a=a_beta, b=b_beta)
+    sigma_square_alpha <- update_sig_square_cub(alpha, a=a_alpha, b=b_alpha)
+    sigma_square_gamma <- update_gamma_sigma_square(gamma, B, a=a_gamma, b=b_gamma)
+    if(iter%%thin==0){
+      iter_record <- iter/thin
+      mcmc$e[iter_record,]   <- e
+      mcmc$alpha[,,1:H, iter_record] <- alpha
+      mcmc$gamma[,,1:H, iter_record] <- gamma
+      mcmc$beta[,,1:H, iter_record]  <- beta
+      mcmc$R[,,1:H, iter_record]     <- R
+      mcmc$H[iter_record] <- H
+      mcmc$a[iter_record,] <-a
+      mcmc$Comega[,,iter_record] <- Comega
+    }
+  }
+  return (mcmc)
+}
+
+
+
+#' depression_prob_predict
+#'
+#' This function returns the predicted probability of reporting depression for each depression item for a new visit,
+#' provided covariates, ART usage information, and previous visit time
+#'
+#' @param mcmc the MCMC output given by \link{main_mcmc}
+#' @param z_new the binary indicator matrix for drug usage information for new visit to predict
+#' @param x_new the covariates matrix for new visit to predict, it also includes the patient ID (1st column) and visit time (2nd column)
+#' @param D the number of drugs
+#' @param Q the number of depression scores
+#' @param S the number of covariates
+#' @param visit_time the visit time records for the dataset we used to generate \code{mcmc}. It is required to obtain the knots for P-spline
+#' @param B the number of bases for P-spline
+#' @param sigma_square the variance of noise for the latent continuous depression scores
+#' @param m0 the concentration parameter for Dirichlet Process
+#' @param seed the starting number used to generate random numbers
+#' @return the predicted probability of reporting depression for each depression item
+#' @seealso
+#' See \link{main_mcmc} for an example.
+#' @export
+depression_prob_predict <- function(mcmc, z_new, x_new, D, Q, S, visit_time,
+                                    B = 10, sigma_square = 1, m0 = 1, seed = 1){
+  if (B <= 4)
+    stop("Since we use cubic spline, B must be larger than 4")
+
+  require(splines)
+  set.seed(seed)
+
+  Niter <- length(mcmc$H)
+  Prob  <- matrix(0, nrow = Niter, ncol = Q)
+  N <- dim(mcmc$e)[2]
+
+  knots <- c(rep(min(visit_time),4)-c(0.2,0.15,0.1,0.05),
+             quantile(visit_time,(1:(B-4))/(B-3)),
+             rep(max(visit_time), 4) + c(0.05,0.1,0.15,0.2))
+  bx_new <- splineDesign(knots, x_new[2], outer.ok = T)
+  datak <- c(x_new, bx_new)
+
+  for(iter in 1:Niter){
+    Zkt <- as.matrix(z_new)
+    weights <- table(mcmc$e[iter,])/(N + m0)
+    Comega <- mcmc$Comega[,,iter]
+    Corr <- Comega + diag(Q)
+    prob <- rep(0, Q)
+    for(k in 1:length(weights)){
+      alphakt <- t(mcmc$alpha[,,k,iter])
+      gammakt <- t(mcmc$gamma[,,k,iter])
+      Rk <- mcmc$R[,,k,iter]
+      betak <- mcmc$beta[,,k,iter]
+      muk <-compute_muk2(alphakt, gammakt, Rk, betak,
+                         Zkt, t(as.matrix(datak)), D, Q, S, B)
+
+      latent <- muk
+      prob <- prob + weights[k] * pnorm(muk,sd=sqrt(sigma_square))
+    }
+    Prob[iter,] <- prob + 0.5 * m0 /(N+m0)
+  }
+  apply(Prob,2,mean)
+}

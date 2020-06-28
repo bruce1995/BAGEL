@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1593372096200.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "F04372A",
+    "lastKnownWriteTime" : 1592966658,
+    "last_content_update" : 1592966658,
+    "path" : "~/Desktop/BAGEL-code/real_data/prediction.R",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "156,59",
+        "scrollLine" : "145"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 10,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

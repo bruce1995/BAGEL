@@ -1,0 +1,4 @@
+useDynLib(BAGEL)
+importFrom(Rcpp, evalCpp)
+importFrom("stats", "rbeta", "rgamma", "rnorm", "runif")
+exportPattern("^[[:alpha:]]+")

@@ -1,0 +1,42 @@
+\name{simulated_data}
+\docType{data}
+\alias{simulated_data}
+
+\title{The simulated data}
+
+\usage{
+data("simulated_data")
+}
+
+\description{
+This is a simulated dataset, including observed datasets and true value of parameters.
+
+The variables are:
+\tabular{ll}{
+	\code{ H}             \tab  the number of clusters \cr
+	\code{rho}            \tab  the prior probability of the binary indicator cube entries being 1\cr
+	\code{alpha}          \tab  the linear coefficients dependent on drug effect\cr
+	\code{gamma}          \tab  the linear coefficients for the P-spline\cr
+	\code{R}              \tab  the binary indicator cube\cr
+	\code{beta}           \tab  the linear coefficients not dependent on drug effect\cr
+	\code{e}              \tab  the clustering membership vector \cr
+	\code{mu}             \tab  the mean of the latent continuous depression scores \cr
+	\code{sigma_square}   \tab  the variance of noise for the latent continuous depression scores\cr
+	\code{Comega}         \tab  the correlation matrix which captures the dependencies among depression items\cr
+	\code{omega}          \tab  the term which captures the dependencies among depression items\cr
+	\code{a}              \tab  the thresholds that connects the latent and observed depression scores\cr
+	\code{U}              \tab  the observed depression scores, each visit corresponds to one row \cr
+	\code{Z}              \tab  the observed binary indicator matrix for drug usage information\cr
+	\code{data}           \tab  the observed covariates matrix, it also includes the P-spline basis expansion
+}
+}
+
+\examples{
+# output true clustering membership
+data("simulated_data")
+simulated_data$e
+
+# get the details of the list
+str(simulated_data)
+}
+\keyword{datasets}

@@ -1,0 +1,105 @@
+library(BAGEL)
+library(mvtnorm)
+data("simulated_data")
+set.seed(1)
+U    <- simulated_data$U
+data <- simulated_data$data
+Z    <- simulated_data$Z
+D    <- 5    #five drugs
+Q    <- 3    #three depression scores
+S    <- 5    #5 covariates
+B    <- 10   #10 basis
+N    <- 200  #200 patients
+
+Comega_init <- diag(Q)
+rho_init    <- 0.1
+H_init      <- 2
+a_init      <- c(-100, 0, 9, 18, 100)
+alpha_init  <- array(rnorm(S*Q*D*H_init,sd=1), dim=c(S,D*Q, H_init))
+gamma_init  <- array(rnorm(B*Q*D*H_init,sd=1), dim=c(B,Q*D, H_init))
+beta_init   <- array(rnorm(Q*(1+S)*H_init,sd=1), dim=c(Q,1+S, H_init))
+R_init      <- array(rbinom(D*Q*H_init, size = 1, prob = rho_init), dim=c(Q,D, H_init))
+
+sigma_square_init <- sigma_square_alpha_init <- sigma_square_beta_init <- sigma_square_gamma_init <- 1
+
+main_mcmc <- function(U, Z, data, D, Q, S, B, N,
+                      Comega_init, rho_init, H_init, a_init, e_init, 
+                      
+                      alpha_init, gamma_init, beta_init, R_init,
+                       
+                      sigma_square_init = 1, sigma_square_alpha_init = 1,
+                      sigma_square_beta_init = 1, sigma_square_gamma_init = 1,
+                      seed = 1){
+  #set.seed(seed)
+  NN <- dim(U)[1]
+  #------initialize--------
+  sigma_square <- sigma_square_init
+  sigma_square_alpha <- sigma_square_alpha_init
+  sigma_square_beta <- sigma_square_beta_init
+  sigma_square_gamma <- sigma_square_gamma_init
+  
+  H <- H_init
+  a <- a_init
+  rho <- rho_init
+  Comega <- Comega_init
+  alpha <- alpha_init
+  gamma <- gamma_init
+  beta  <- beta_init
+  R     <- R_init
+  e     <- e_init
+  omega <- rmvnorm(NN, rep(0,Q), Comega_init)
+  mu    <- compute_mu_cpp(H, e,  alpha, gamma, R, beta, Z, data, D, Q, S, B)
+  Y     <- update_Y_cpp(U, a, mu+omega, Q,sigma_square )
+  
+  for(iter in 1:2){
+    RETURNALPHA <- update_alpha_cpp(H, e, alpha, gamma, R, beta, Z, data, D, Q, S, B,
+                                    mu, Y-omega, sigma_square, sigma_square_alpha)
+    alpha <- RETURNALPHA$alpha
+    mu    <- RETURNALPHA$mu
+    
+    RETURNGAMMA <- update_gamma_cpp(H, e, alpha, gamma, R, beta, Z, data, D, Q, S, B,
+                                    mu, Y-omega, sigma_square, sigma_square_gamma)
+    gamma <- RETURNGAMMA$gamma
+    mu    <- RETURNGAMMA$mu
+    
+    beta <- update_beta_cpp(H, e, alpha, gamma, R, beta, Z,
+                            data, D, Q, S, B, Y-omega, sigma_square, sigma_square_beta)
+    mu   <- compute_mu_cpp(H, e,alpha, gamma, R, beta, Z, data, D, Q, S, B)
+    
+    R  <- update_R_cpp(H, e, alpha, gamma, R, beta, Z, data, D, Q, S, B,
+                       a, U, mu,Y-omega, rho ,sigma_square )
+    mu <- compute_mu_cpp(H, e,  alpha, gamma,  R, beta, Z, data, D, Q, S, B)
+    
+    RETURNE <- update_e_cpp(H, e, alpha, gamma, R, beta,
+                            Z, data, D, Q, S, B,a, U, mu, Y-omega, N, sigma_square, 1, rho, 10)
+    H     <- RETURNE$H
+    e     <- RETURNE$e
+    alpha <- RETURNE$alpha
+    gamma <- RETURNE$gamma
+    R     <- RETURNE$R
+    beta  <- RETURNE$beta
+    mu    <- compute_mu_cpp(H, e, alpha, gamma, R, beta, Z, data, D, Q, S, B)
+    
+    rho                <- update_rho(R)
+    Y                  <- update_Y_cpp(U, a, mu+omega, Q,sigma_square )
+    a                  <- update_a_cpp(U, mu+omega, a, sqrt(sigma_square),0.3) 
+    omega              <- update_omega_cpp(Y, mu, Comega, sigma_square, Q)
+    Comega             <- update_Comega_cpp(omega, Comega, Q, sigma_square, step = 100/NN) 
+    sigma_square_beta  <- update_sig_square_cub_cpp(beta, a=3, b=10)
+    sigma_square_alpha <- update_sig_square_cub_cpp(alpha, a=3, b=10)
+    sigma_square_gamma <- update_gamma_sigma_square_cpp(gamma, B, a=10, b=1)
+  }
+  return (mu)
+}
+
+
+
+
+mu <-main_mcmc(U, Z, data, D, Q, S, B, N,
+               Comega_init, a_init,
+               alpha_init, gamma_init, beta_init, R_init,
+               e_init,  H_init, 
+               sigma_square_init = 1, sigma_square_alpha_init = 1,
+               sigma_square_beta_init = 1, sigma_square_gamma_init = 1,
+               seed = 1)
+mu[1:10,]

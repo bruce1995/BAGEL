@@ -1,0 +1,19 @@
+Package: BAGEL
+Type: Package
+Title: A Bayesian Graphical Model for Inferring Drug Effect Longitudinally on Depression in People with HIV
+Version: 0.1.0
+Authors@R: c( person("Yuliang", "Li", email = "yli193@jhu.edu", role = c("aut", "cre")),
+              person("Yanxun", "Xu", email = "yxu.jhu@gmail.com", role = c("aut")),
+              person("Yang", "Ni", email = "yangni87@gmail.com", role = c("aut"))
+            )
+Description: BAGEL, a BAyesian Graphical model,   
+    that infers drug Effect on depression Longitudinally in people with HIV.
+    BAGEL investigates the longitudinal effects of antiretroviral therapy (ART) drugs on a range of 
+    depression symptoms while adjusting for patients’ demographic, behavior, and clinical 
+    characteristics, and taking into account the heterogeneous population through a Bayesian nonparametric prior.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+LinkingTo: Rcpp, RcppArmadillo, RcppDist
+Imports: Rcpp
+RoxygenNote: 7.0.2

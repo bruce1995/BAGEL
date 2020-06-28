@@ -1,0 +1,48 @@
+\name{update_e_cpp}
+\alias{update_e_cpp}
+\title{Function to update the clustering membership vector}
+\description{
+  This function takes current parameters, gives the updated clustering membership vector, along with corresponding parameters.
+}
+\usage{
+update_e_cpp(H, e, alpha, gamma, R, beta,
+              Z, data, D, Q, S, B,
+              a, U, mu, Y, N,
+              sigma_square = 1, m0 = 1,
+              rho = 0.5, H_max = 50)
+}
+\arguments{
+  \item{H}{the number of clusters}
+  \item{e}{the clustering membership vector}
+  \item{alpha}{the linear coefficients dependent on drug effect. It should be a cube, each slice corresponds to one cluster, each slice should be a 'S' by 'DQ' matrix.}
+  \item{gamma}{the linear coefficients for the P-spline. It should be a cube, each slice corresponds to one cluster, each slice should be a 'B' by 'DQ' matrix.}
+  \item{R}{the binary indicator cube. It should be a cube, each slice corresponds to one cluster, each slice should be a 'Q' by 'D' matrix.}
+  \item{beta}{the linear coefficients not dependent on drug effect. It should be a cube, each slice corresponds to one cluster, each slice should be a 'Q' by '1+S' matrix with the first column being the intercept.}
+  \item{Z}{the binary indicator matrix for drug usage information, each row corresponds to one visit}
+  \item{data}{the covariates matrix, it also includes the P-spline basis expansion. Each row corresponds to one visit}
+  \item{D}{the number of drugs}
+  \item{Q}{the number of depression scores}
+  \item{S}{the number of covariates}
+  \item{B}{the number of bases for P-spline}
+  \item{a}{the thresholds that connects the latent and observed depression scores. It should be a vector.}
+  \item{U}{the depression scores, each row corresponds to one visit}
+  \item{mu}{the mean of the latent continuous depression scores}
+  \item{Y}{the latent depression scores}
+  \item{N}{the number of patients in the dataset}
+  \item{sigma_square}{the variance of noise for the latent continuous depression scores. Default value is 1.}
+  \item{m0}{the concentration parameter for Dirichlet Process. Default value is 1.}
+  \item{rho}{the prior probability of the binary indicator cube entries being 1. Default value is 0.5.}
+  \item{H_max}{the maximum number of clusters allowed. Default value is 50.}
+}
+\value{
+  \code{update_e_cpp(H, e, alpha, gamma, R, beta, Z, data, D, Q, S, B, eta, U, mu, Y, N, sigma_square, m0, rho, H_max)} returns a list with six parameters:
+  \item{H}{the number of clusters}
+  \item{e}{the clustering membership vector}
+  \item{alpha}{the linear coefficients dependent on drug effect}
+  \item{gamma}{the linear coefficients for the P-spline}
+  \item{R}{the binary indicator cube}
+  \item{beta}{the linear coefficients not dependent on drug effect.}
+}
+\seealso{
+\link{update_rho} for a complete example for all functions in this package.
+}

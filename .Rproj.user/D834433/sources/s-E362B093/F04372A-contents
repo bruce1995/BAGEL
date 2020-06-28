@@ -1,0 +1,192 @@
+#---------
+load("real_data/real_data_DC.Rdata")
+load("real_data/summary_mcmc/cl_use.Rdata")
+load("real_data/summary_mcmc/Gamma.Rdata")
+load("real_data/summary_mcmc/summarize_para.Rdata")
+load("real_data/real_data_mcmc.Rdata")
+Rcpp::sourceCpp('real_data/update7.cpp')
+
+set.seed(1)
+N <- dim(record$cl)[2]
+colnames(DRUG)[2] <- "DTG"
+colnames(DRUG)[3] <- "EVG"
+colnames(DRUG)[4] <- "RAL"
+colnames(DRUG)[16] <- "ATV"
+colnames(DRUG)[13] <- "3TC"
+
+drug <- DRUG[which(COVA$WIHSID==177),]
+datak <- COVA[which(COVA$WIHSID==177),]
+drug
+dep <- DEP[which(COVA$WIHSID==177),]
+
+p <- dim(DRUG)[2]
+q <- dim(DEP)[2]
+r <- 5   
+s <- 8    
+M<-10
+iter <- 301
+visit <- 3
+
+
+prob0 <- prob1 <- prob2 <- matrix(0,nrow = 200, ncol = 20)
+drug[3,4] <- 0
+drug[3,2] <- 1
+for(iter in 401:500){
+  
+  Xk <- t(as.matrix(drug))
+  weights <- table(record$cl[iter,])/N
+  Sig <- record$Sig[,,iter]
+  
+  
+  prob <- rep(0, q)
+  for(k in 1:length(weights)){
+    phik <- t(record$phi[,,k,iter])
+    betak <- t(record$beta[,,k,iter])
+    gammak <- record$gamma[,,k,iter]
+    Ak <- record$A[,,k,iter]
+    muk <-compute_muk_cpp(phik, betak, as.matrix(gammak), Ak,
+                          t(as.matrix(drug)), as.matrix(datak),
+                          p,q,r,s,M)
+    
+    latent <- muk 
+    prob <- prob + weights[k] * (pnorm(latent[visit,],sd=1))
+  }
+  
+  
+  prob0[iter-400,] <- prob
+}
+
+drug[3,2] <- 0
+drug[3,3] <- 1
+for(iter in 401:500){
+  Xk <- t(as.matrix(drug))
+  weights <- table(record$cl[iter,])/N
+  
+  prob <- rep(0, q)
+  for(k in 1:length(weights)){
+    phik <- t(record$phi[,,k,iter])
+    betak <- t(record$beta[,,k,iter])
+    gammak <- record$gamma[,,k,iter]
+    Ak <- record$A[,,k,iter]
+    muk <-compute_muk_cpp(phik, betak, as.matrix(gammak), Ak,
+                          t(as.matrix(drug)), as.matrix(datak),
+                          p,q,r,s,M)
+    
+    latent <- muk 
+    prob <- prob + weights[k] * (pnorm(latent[visit,],sd=1))
+  }
+  
+  
+  prob1[iter-400,] <- prob
+}
+
+drug[3,3] <- 0
+drug[3,4] <- 1
+for(iter in 401:500){
+  Xk <- t(as.matrix(drug))
+  weights <- table(record$cl[iter,])/N
+  
+  prob <- rep(0, q)
+  for(k in 1:length(weights)){
+    phik <- t(record$phi[,,k,iter])
+    betak <- t(record$beta[,,k,iter])
+    gammak <- record$gamma[,,k,iter]
+    Ak <- record$A[,,k,iter]
+    muk <-compute_muk_cpp(phik, betak, as.matrix(gammak), Ak,
+                          t(as.matrix(drug)), as.matrix(datak),
+                          p,q,r,s,M)
+    
+    latent <- muk 
+    prob <- prob + weights[k] * (pnorm(latent[visit,],sd=1))
+  }
+  
+  
+  prob2[iter-400,] <- prob
+}
+
+colnames(prob0)<- colnames(prob1) <- colnames(prob2) <- colnames(DEP)
+sort(apply(prob0,2,mean))
+sum(apply(prob0,2,mean))
+sort(apply(prob1,2,mean))
+sum(apply(prob1,2,mean))
+sort(apply(prob2,2,mean))
+sum(apply(prob2,2,mean))
+# prob0: TDF + TFC + DTG
+# prob1: TDF + TFC + EVG
+# prob2: TDF + TFC + RAL
+
+#--------
+set.seed(1)
+
+poss <- matrix(c(2, 12,13,
+                 2, 12,15,
+                 2, 13,15,
+                 3, 12,13,
+                 3, 12,15,
+                 3, 13,15,
+                 4, 12,13,
+                 4, 12,15,
+                 4, 13,15),
+                 ncol = 3, byrow = T)
+
+prob <- matrix(0,nrow = 200, ncol = 20)
+Rec <- matrix(NA, nrow = nrow(poss), ncol = 20)
+
+row <- 1
+set.seed(1)
+for(row in 1:nrow(poss)){
+  drug[3,] <- rep(0,p)
+  drug[3,poss[row,1]] <- drug[3,poss[row,2]] <- drug[3,poss[row,3]] <- 1
+  
+  for(iter in 401:500){
+    Xk <- t(as.matrix(drug))
+    weights <- table(record$cl[iter,])/N
+    Sig <- record$Sig[,,iter]
+    
+    pro <- rep(0, q)
+    for(k in 1:length(weights)){
+      phik <- t(record$phi[,,k,iter])
+      betak <- t(record$beta[,,k,iter])
+      gammak <- record$gamma[,,k,iter]
+      Ak <- record$A[,,k,iter]
+      muk <-compute_muk_cpp(phik, betak, as.matrix(gammak), Ak,
+                            t(as.matrix(drug)), as.matrix(datak),
+                            p,q,r,s,M)
+      
+      latent <- muk 
+      pro <- pro + weights[k] * (pnorm(latent[visit,],sd=1))
+    }
+    
+    prob[iter-400,] <- pro
+  }
+  Rec[row,] <- apply(prob,2,mean)
+}
+
+colnames(Rec) <- colnames(DEP)
+CC <- which.min(apply(Rec,1,sum))
+colnames(drug)[poss[CC,]]
+
+
+#-----------
+library(ggplot2)
+library(reshape2)
+depnames <- c("Bothered", "Appetite", "Blues", "Good as others",
+              "Concentration", "Depressed", "Effort", "Hopeful of future",
+              "Failure", "Fearful", "Restless", "Happy",
+              "Talked less", "Lonely", "People unfriendly", "Enjoyed life",
+              "Crying spells", "Sadness", "People disliked me", "Energy")
+colnames(Rec) <- depnames
+rownames(Rec) <- rep("a", nrow(poss))
+for(i in 1:nrow(poss)){
+  rownames(Rec)[i] <- paste0(colnames(drug)[poss[i,3]], "+", 
+                             colnames(drug)[poss[i,2]],"+", colnames(drug)[poss[i,1]], split="")
+  
+}
+
+
+depression_group <- c(3,3,2,1,3,2,3,1,2,2,3,1,3,2,4,1,2,2,4,3)
+depression_order <- order(depression_group)
+Rec <- Rec[,depression_order] 
+
+Rec_sometic <- Rec[,3:9]
+apply(Rec_sometic,1,sum)

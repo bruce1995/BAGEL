@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1593313368613.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "9E38A317",
+    "lastKnownWriteTime" : 1593372278,
+    "last_content_update" : 1593372278977,
+    "path" : "~/Documents/BAGEL/src/BAGEL.h",
+    "project_path" : "src/BAGEL.h",
+    "properties" : {
+        "cursorPosition" : "1203,19",
+        "scrollLine" : "1183"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 8,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "h"
+}

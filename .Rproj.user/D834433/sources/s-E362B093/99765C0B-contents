@@ -1,0 +1,180 @@
+main_mcmc2 <- function(U, Z, X, D, Q, S,  N,
+                      Comega_init, rho_init, H_init, a_init, e_init,
+                      alpha_init, gamma_init, beta_init, R_init,
+                      Burnin, Niter, thin = 1, B = 10,
+                      sigma_square_alpha_init = 1, sigma_square_beta_init = 1,
+                      sigma_square_gamma_init = 1, sigma_square = 1,
+                      m0 = 1, H_max = 10, a_rho = 1, b_rho = 10,
+                      step_a = 0.3, step_Comega = 100, a_beta = 3, b_beta = 10,
+                      a_alpha = 3, b_alpha = 10, a_gamma = 10, b_gamma = 1,
+                      seed = 1){
+  require(splines)
+  set.seed(seed)
+  NN <- dim(U)[1]
+  tt <- X[,2]/max(X[,2])
+  
+  knots <- c(rep(min(tt),4)-c(0.2,0.15,0.1,0.05), 
+             quantile(tt,(1:(B-4))/(B-3)),
+             rep(max(tt), 4) + c(0.05,0.1,0.15,0.2)) 
+  pbase <- splineDesign(knots, tt, outer.ok = T)
+  data <- cbind(X, pbase)
+  
+  #------initialize--------
+  mcmc <- NULL
+  mcmc$e      <- matrix(NA, nrow = Niter %/% thin, ncol = N)
+  mcmc$alpha  <- array(NA, dim=c(S,D*Q, H_max, Niter %/% thin))
+  mcmc$gamma  <- array(NA, dim=c(B,Q*D, H_max, Niter %/% thin))
+  mcmc$beta   <- array(NA, dim=c(Q,1+S, H_max, Niter %/% thin))
+  mcmc$R      <- array(NA, dim=c(Q,D, H_max, Niter %/% thin))
+  mcmc$H      <- rep(NA, Niter %/% thin)
+  mcmc$a      <- matrix(NA, nrow = Niter %/% thin, ncol = length(a_init))
+  mcmc$Comega <- array(NA, dim = c(Q,Q,Niter %/% thin))
+  
+  sigma_square_alpha <- sigma_square_alpha_init
+  sigma_square_beta <- sigma_square_beta_init
+  sigma_square_gamma <- sigma_square_gamma_init
+  
+  H <- H_init
+  a <- a_init
+  rho <- rho_init
+  Comega <- Comega_init
+  alpha <- alpha_init
+  gamma <- gamma_init
+  beta  <- beta_init
+  R     <- R_init
+  e     <- e_init
+  omega <- rmvnorm(NN, rep(0,Q), Comega_init)
+  mu    <- compute_mu(H, e,  alpha, gamma, R, beta, Z, data, D, Q, S, B)
+  Y     <- update_Y(U, a, mu+omega, Q,sigma_square )
+  
+  for(iter in 1:Burnin){
+    RETURNALPHA <- update_alpha(H, e, alpha, gamma, R, beta, Z, data, D, Q, S, B,
+                                mu, Y-omega, sigma_square, sigma_square_alpha)
+    alpha <- RETURNALPHA$alpha
+    mu    <- RETURNALPHA$mu
+    
+    RETURNGAMMA <- update_gamma(H, e, alpha, gamma, R, beta, Z, data, D, Q, S, B,
+                                mu, Y-omega, sigma_square, sigma_square_gamma)
+    gamma <- RETURNGAMMA$gamma
+    mu    <- RETURNGAMMA$mu
+    
+    beta <- update_beta(H, e, alpha, gamma, R, beta, Z,
+                        data, D, Q, S, B, Y-omega, sigma_square, sigma_square_beta)
+    mu   <- compute_mu(H, e,alpha, gamma, R, beta, Z, data, D, Q, S, B)
+    
+    R  <- update_R(H, e, alpha, gamma, R, beta, Z, data, D, Q, S, B,
+                   a, U, mu,Y-omega, rho ,sigma_square )
+    mu <- compute_mu(H, e,  alpha, gamma,  R, beta, Z, data, D, Q, S, B)
+    
+    RETURNE <- update_e(H, e, alpha, gamma, R, beta,
+                        Z, data, D, Q, S, B,a, U, mu, Y-omega, N, sigma_square, m0, rho, H_max)
+    H     <- RETURNE$H
+    e     <- RETURNE$e
+    alpha <- RETURNE$alpha
+    gamma <- RETURNE$gamma
+    R     <- RETURNE$R
+    beta  <- RETURNE$beta
+    mu    <- compute_mu(H, e, alpha, gamma, R, beta, Z, data, D, Q, S, B)
+    
+    rho                <- update_rho(R, a_rho, b_rho)
+    Y                  <- update_Y(U, a, mu+omega, Q,sigma_square )
+    a                  <- update_a(U, mu+omega, a, sqrt(sigma_square),step_a)
+    omega              <- update_omega(Y, mu, Comega, sigma_square, Q)
+    Comega             <- update_Comega(omega, Comega, Q, sigma_square, step = step_Comega/NN)
+    sigma_square_beta  <- update_sig_square_cub(beta, a=a_beta, b=b_beta)
+    sigma_square_alpha <- update_sig_square_cub(alpha, a=a_alpha, b=b_alpha)
+    sigma_square_gamma <- update_gamma_sigma_square(gamma, B, a=a_gamma, b=b_gamma)
+  }
+  for(iter in 1:Niter){
+    RETURNALPHA <- update_alpha(H, e, alpha, gamma, R, beta, Z, data, D, Q, S, B,
+                                mu, Y-omega, sigma_square, sigma_square_alpha)
+    alpha <- RETURNALPHA$alpha
+    mu    <- RETURNALPHA$mu
+    
+    RETURNGAMMA <- update_gamma(H, e, alpha, gamma, R, beta, Z, data, D, Q, S, B,
+                                mu, Y-omega, sigma_square, sigma_square_gamma)
+    gamma <- RETURNGAMMA$gamma
+    mu    <- RETURNGAMMA$mu
+    
+    beta <- update_beta(H, e, alpha, gamma, R, beta, Z,
+                        data, D, Q, S, B, Y-omega, sigma_square, sigma_square_beta)
+    mu   <- compute_mu(H, e,alpha, gamma, R, beta, Z, data, D, Q, S, B)
+    
+    R  <- update_R(H, e, alpha, gamma, R, beta, Z, data, D, Q, S, B,
+                   a, U, mu,Y-omega, rho ,sigma_square )
+    mu <- compute_mu(H, e,  alpha, gamma,  R, beta, Z, data, D, Q, S, B)
+    
+    RETURNE <- update_e(H, e, alpha, gamma, R, beta,
+                        Z, data, D, Q, S, B,a, U, mu, Y-omega, N, sigma_square, m0, rho, H_max)
+    H     <- RETURNE$H
+    e     <- RETURNE$e
+    alpha <- RETURNE$alpha
+    gamma <- RETURNE$gamma
+    R     <- RETURNE$R
+    beta  <- RETURNE$beta
+    mu    <- compute_mu(H, e, alpha, gamma, R, beta, Z, data, D, Q, S, B)
+    
+    rho                <- update_rho(R)
+    Y                  <- update_Y(U, a, mu+omega, Q,sigma_square )
+    a                  <- update_a(U, mu+omega, a, sqrt(sigma_square),step_a)
+    omega              <- update_omega(Y, mu, Comega, sigma_square, Q)
+    Comega             <- update_Comega(omega, Comega, Q, sigma_square, step = step_Comega/NN)
+    sigma_square_beta  <- update_sig_square_cub(beta, a=a_beta, b=b_beta)
+    sigma_square_alpha <- update_sig_square_cub(alpha, a=a_alpha, b=b_alpha)
+    sigma_square_gamma <- update_gamma_sigma_square(gamma, B, a=a_gamma, b=b_gamma)
+    if(iter%%thin==0){
+      iter_record <- iter/thin
+      mcmc$e[iter_record,]   <- e
+      mcmc$alpha[,,1:H, iter_record] <- alpha
+      mcmc$gamma[,,1:H, iter_record] <- gamma
+      mcmc$beta[,,1:H, iter_record]  <- beta
+      mcmc$R[,,1:H, iter_record]     <- R
+      mcmc$H[iter_record] <- H
+      mcmc$a[iter_record,] <-a
+      mcmc$Comega[,,iter_record] <- Comega
+    }
+  }
+  return (mcmc)
+}
+
+
+
+library(BAGEL)
+library(mvtnorm)
+data("simulated_data")
+set.seed(1)
+U    <- simulated_data$U
+data <- simulated_data$data
+
+Z    <- simulated_data$Z
+D    <- 5    #five drugs
+Q    <- 3    #three depression scores
+S    <- 5    #5 covariates
+B    <- 10   #10 basis
+N    <- 200  #200 patients
+X <- data[,1:(S+2)]
+
+Comega_init <- diag(Q)
+rho_init    <- 0.1
+H_init      <- 2
+a_init      <- c(-100, 0, 9, 18, 100)
+e_init      <- sample.int(H_init, size = N, replace = T)
+alpha_init  <- array(rnorm(S*Q*D*H_init,sd=1), dim=c(S,D*Q, H_init))
+gamma_init  <- array(rnorm(B*Q*D*H_init,sd=1), dim=c(B,Q*D, H_init))
+beta_init   <- array(rnorm(Q*(1+S)*H_init,sd=1), dim=c(Q,1+S, H_init))
+R_init      <- array(rbinom(D*Q*H_init, size = 1, prob = rho_init), dim=c(Q,D, H_init))
+
+sigma_square <- sigma_square_alpha_init <- sigma_square_beta_init <- sigma_square_gamma_init <- 1
+
+
+mcmc <- main_mcmc2(U, Z, X, D, Q, S, N,
+                  Comega_init, rho_init, H_init, a_init, e_init,
+                  alpha_init, gamma_init, beta_init, R_init,
+                  10, 2,1, B,
+                  sigma_square_alpha_init = 1, sigma_square_beta_init = 1,
+                  sigma_square_gamma_init = 1, sigma_square = 1,
+                  m0 = 1, H_max = 3, a_rho = 1, b_rho = 10,
+                  step_a = 0.3, step_Comega = 100, a_beta = 3, b_beta = 10,
+                  a_alpha = 3, b_alpha = 10, a_gamma = 10, b_gamma = 1,
+                  seed = 1)
+mcmc$R
